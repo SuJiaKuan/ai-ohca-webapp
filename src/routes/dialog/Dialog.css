@@ -3,6 +3,7 @@
 .root {
   padding-left: 20px;
   padding-right: 20px;
+  min-height: 650px;
 }
 
 .container {
