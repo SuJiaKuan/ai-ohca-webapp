@@ -19,7 +19,7 @@ function action() {
     title,
     component: (
       <Layout>
-        <Dialog title={title} />
+        <Dialog />
       </Layout>
     ),
   };

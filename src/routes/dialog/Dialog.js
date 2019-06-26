@@ -8,21 +8,27 @@
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import withStyles from 'isomorphic-style-loader/lib/withStyles';
+import axios from 'axios';
+import includes from 'lodash/includes';
 import s from './Dialog.css';
 
-class Dialog extends React.Component {
-  static propTypes = {
-    title: PropTypes.string.isRequired,
-  };
+const STEP = {
+  INPUT: 'INPUT',
+  ANALYSIS: 'ANALYSIS',
+};
 
+const KEY_WORDS = ['沒氣'];
+
+class Dialog extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
+      step: STEP.INPUT,
       dialogFull: '',
       dialogPartial: '',
+      dialogWords: [],
       speechRecognizing: false,
     };
   }
@@ -74,47 +80,99 @@ class Dialog extends React.Component {
     });
   };
 
+  analyzeDialog = async () => {
+    const dialog = `${this.state.dialogFull}${this.state.dialogPartial}`;
+
+    try {
+      const res = await axios.post('http://localhost:3009/cut', {
+        data: dialog,
+      });
+
+      this.setState({
+        step: STEP.ANALYSIS,
+        dialogWords: res.data,
+      });
+    } catch (err) {
+      // TODO(feabries su): Error handling.
+      console.error(err);
+    }
+  };
+
+  renderWordSegments = (words, keyWords) => (
+    <div className={s.formGroup}>
+      {words.map(word => {
+        const style = {};
+
+        if (includes(keyWords, word)) {
+          style.color = 'red';
+        }
+
+        return <span style={style}>{word}</span>;
+      })}
+    </div>
+  );
+
   render() {
     const dialog = `${this.state.dialogFull}${this.state.dialogPartial}`;
+    const wordSegments = this.renderWordSegments(
+      this.state.dialogWords,
+      KEY_WORDS,
+    );
 
     return (
       <div className={s.root}>
-        <div className={s.container}>
-          <h1>{this.props.title}</h1>
-          <p className={s.lead}>開啟麥克風以錄製使用者對話</p>
-          <form method="post">
-            <div className={s.formGroup}>
-              <label // eslint-disable-line
-                className={s.label}
-                style={{ position: 'relative' }}
-                htmlFor="callerDialog"
-              >
-                <textarea
-                  className={s.input}
-                  id="callerDialog"
-                  name="callerDialog"
-                  rows="15"
-                  cols="50"
-                  value={dialog}
-                  readOnly
-                />
-                <img // eslint-disable-line
-                  className={s.micBtn}
-                  src={
-                    this.state.speechRecognizing ? 'mic-animate.gif' : 'mic.gif'
-                  }
-                  alt="Microphone Button"
-                  onClick={this.changeSpeechRecognition}
-                />
-              </label>
-            </div>
-            <div className={s.formGroup}>
-              <button className={s.button} type="button">
-                下一步
-              </button>
-            </div>
-          </form>
-        </div>
+        {this.state.step === STEP.INPUT && (
+          <div className={s.container}>
+            <h1>使用者對話</h1>
+            <p className={s.lead}>開啟麥克風以錄製使用者對話</p>
+            <form method="post">
+              <div className={s.formGroup}>
+                <label // eslint-disable-line
+                  className={s.label}
+                  style={{ position: 'relative' }}
+                  htmlFor="callerDialog"
+                >
+                  <textarea
+                    className={s.input}
+                    id="callerDialog"
+                    name="callerDialog"
+                    rows="15"
+                    cols="50"
+                    value={dialog}
+                    readOnly
+                  />
+                  <img // eslint-disable-line
+                    className={s.micBtn}
+                    src={
+                      this.state.speechRecognizing
+                        ? 'mic-animate.gif'
+                        : 'mic.gif'
+                    }
+                    alt="Microphone Button"
+                    onClick={this.changeSpeechRecognition}
+                  />
+                </label>
+              </div>
+              <div className={s.formGroup}>
+                <button
+                  className={s.button}
+                  type="button"
+                  disabled={this.state.speechRecognizing}
+                  onClick={this.analyzeDialog}
+                >
+                  分析
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+        {this.state.step === STEP.ANALYSIS && (
+          <div className={s.container}>
+            <h1>分析結果</h1>
+            <strong className={s.lineThrough}>關鍵字</strong>
+            <form method="post">{wordSegments}</form>
+          </div>
+        )}
       </div>
     );
   }

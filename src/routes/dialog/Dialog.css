@@ -64,13 +64,19 @@
   cursor: pointer;
 }
 
-.button:hover {
-  background: rgba(54, 50, 119, 0.8);
-}
-
 .button:focus {
   border-color: #0074c2;
   box-shadow: 0 0 8px rgba(0, 116, 194, 0.6);
+}
+
+.button:disabled {
+  background-color: rgba(55, 50, 119, 0.5);
+  border: 0;
+  cursor: not-allowed;
+}
+
+.button:not([disabled]):hover {
+  background: rgba(54, 50, 119, 0.8);
 }
 
 .micBtn {
@@ -78,4 +84,38 @@
   top: 0;
   right: 0;
   cursor: pointer;
+}
+
+.lineThrough {
+  position: relative;
+  z-index: 1;
+  display: block;
+  margin-bottom: 15px;
+  width: 100%;
+  color: #757575;
+  text-align: center;
+  font-size: 80%;
+}
+
+.lineThrough::before {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: -1;
+  margin-top: -5px;
+  margin-left: -20px;
+  width: 40px;
+  height: 10px;
+  background-color: #fff;
+  content: '';
+}
+
+.lineThrough::after {
+  position: absolute;
+  top: 49%;
+  z-index: -2;
+  display: block;
+  width: 100%;
+  border-bottom: 1px solid #ddd;
+  content: '';
 }
