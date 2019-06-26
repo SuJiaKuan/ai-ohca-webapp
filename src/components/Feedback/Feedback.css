@@ -22,18 +22,6 @@
   font-size: 1.5em; /* ~24px */
 }
 
-.link,
-.link:active,
-.link:hover,
-.link:visited {
-  color: #333;
-  text-decoration: none;
-}
-
-.link:hover {
-  text-decoration: underline;
-}
-
 .spacer {
   padding-right: 15px;
   padding-left: 15px;
