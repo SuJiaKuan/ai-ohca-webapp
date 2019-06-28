@@ -18,7 +18,7 @@ const STEP = {
   INPUT: 'INPUT',
   ANALYSIS: 'ANALYSIS',
 };
-const KEY_WORDS = ['沒氣'];
+const KEY_WORDS = ['沒氣', '梗塞', '呼吸', '微弱', '胸口'];
 
 class Dialog extends React.Component {
   constructor(props) {
