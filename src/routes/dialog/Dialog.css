@@ -120,3 +120,22 @@
   border-bottom: 1px solid #ddd;
   content: '';
 }
+
+.ohca {
+  text-align: center;
+  font-size: 160px;
+  margin: 30px 0;
+}
+
+.ohcaSafe {
+  color: #42f598;
+}
+
+.ohcaDanger {
+  color: #f54263;
+  animation: blinker 1s linear infinite;
+}
+
+@keyframes blinker {
+  50% { opacity: 0; }
+}

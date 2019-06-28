@@ -9,6 +9,7 @@
 
 import React from 'react';
 import withStyles from 'isomorphic-style-loader/lib/withStyles';
+import cx from 'classnames';
 import axios from 'axios';
 import includes from 'lodash/includes';
 import s from './Dialog.css';
@@ -17,7 +18,6 @@ const STEP = {
   INPUT: 'INPUT',
   ANALYSIS: 'ANALYSIS',
 };
-
 const KEY_WORDS = ['沒氣'];
 
 class Dialog extends React.Component {
@@ -30,6 +30,7 @@ class Dialog extends React.Component {
       dialogPartial: '',
       dialogWords: [],
       speechRecognizing: false,
+      needOHCA: false,
     };
   }
 
@@ -84,13 +85,20 @@ class Dialog extends React.Component {
     const dialog = `${this.state.dialogFull}${this.state.dialogPartial}`;
 
     try {
-      const res = await axios.post('http://localhost:3009/cut', {
+      let res = await axios.post('http://localhost:3009/cut', {
         data: dialog,
       });
+      const dialogWords = res.data;
+
+      res = await axios.post('http://localhost:3009/ohca', {
+        data: dialog,
+      });
+      const needOHCA = res.data.ohca;
 
       this.setState({
         step: STEP.ANALYSIS,
-        dialogWords: res.data,
+        dialogWords,
+        needOHCA,
       });
     } catch (err) {
       // TODO(feabries su): Error handling.
@@ -112,12 +120,24 @@ class Dialog extends React.Component {
     </div>
   );
 
+  renderOHCA = isNeeded => {
+    const text = isNeeded ? 'OHCA' : 'SAFE';
+    const className = cx({
+      [s.ohca]: true,
+      [s.ohcaDanger]: isNeeded,
+      [s.ohcaSafe]: !isNeeded,
+    });
+
+    return <p className={className}>{text}</p>;
+  };
+
   render() {
     const dialog = `${this.state.dialogFull}${this.state.dialogPartial}`;
     const wordSegments = this.renderWordSegments(
       this.state.dialogWords,
       KEY_WORDS,
     );
+    const ohca = this.renderOHCA(this.state.needOHCA);
 
     return (
       <div className={s.root}>
@@ -171,6 +191,8 @@ class Dialog extends React.Component {
             <h1>分析結果</h1>
             <strong className={s.lineThrough}>關鍵字</strong>
             <form method="post">{wordSegments}</form>
+            <strong className={s.lineThrough}>OHCA</strong>
+            {ohca}
           </div>
         )}
       </div>
